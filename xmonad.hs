@@ -76,20 +76,43 @@ spotifyCommand = "spotify"
 spotifyClassName = "Spotify"
 isSpotify = (className =? spotifyClassName)
 
+franzCommand = "franz"
+franzClassName = "Franz"
+isFranz = (className =? franzClassName)
+
+trelloCommand = "trello"
+trelloClassName = "Trello"
+isTrello = (className =? trelloClassName)
+
+slackCommand = "slack"
+slackClassName = "Slack"
+isSlack = (className =? slackClassName)
+
+telegramCommand = "telegram-desktop"
+telegramClassName = "telegram-desktop" 
+isTelegram = (className =? telegramClassName)
+
+pavucontrolCommand = "pavucontrol"
+pavucontrolClassName = "Pavucontrol"
+isPavucontrol = (className =? pavucontrolClassName) 
+
+
 scratchpads :: [NamedScratchpad]
 scratchpads = 
-    [ --(NS "franz" "xterm -e franz" (title =? "Franz") defaultFloating,
+    [ 
      NS "spotify" spotifyCommand isSpotify (customFloating $ W.RationalRect (1/40) (1/20) (19/20) (9/10))
-     , NS "trello" "trello" (title =? "Trello") (customFloating $ W.RationalRect (1/6) (1/6) (2/3) (2/3))
-     , NS "slack" "slack" (title =? "Slack") defaultFloating 
-     , NS "Franz" "Franz" (title=? "Franz") (customFloating $ W.RationalRect (1/6) (1/6) (2/3) (2/3))
+     , NS "trello" trelloCommand isTrello  (customFloating $ W.RationalRect (1/6) (1/6) (2/3) (2/3))
+     , NS "slack" slackCommand isSlack  (customFloating $ W.RationalRect (1/6) (1/6) (2/3) (2/3))
+     , NS "franz" franzCommand isFranz (customFloating $ W.RationalRect (1/6) (1/6) (2/3) (2/3))
+     , NS "telegram" telegramCommand isTelegram (customFloating $ W.RationalRect (1/6) (1/6) (2/3) (2/3))
+     , NS "pavucontrol" pavucontrolCommand isPavucontrol (customFloating $ W.RationalRect (1/6) (1/6) (2/3) (2/3))
     ]
         
 
 ------------------------------------------------------------------------
 -- Workspaces
 -- The default number of workspaces (virtual screens) and their names.
---
+
 wsGEN = "GEN"
 wsWRK = "WRK" 
 wsCTF = "CTF"
@@ -399,9 +422,18 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   -- spawn Trello
   , ((modMask .|. shiftMask, xK_t),
      namedScratchpadAction scratchpads "trello")
+
   -- spawn Franz
   , ((modMask .|. shiftMask, xK_f),
-     namedScratchpadAction scratchpads "Franz")
+     namedScratchpadAction scratchpads "franz")
+
+  -- spawn Franz
+  , ((modMask .|. shiftMask, xK_g),
+     namedScratchpadAction scratchpads "telegram")
+
+-- spawn Pavucontrol
+  , ((modMask .|. shiftMask, xK_p),
+     namedScratchpadAction scratchpads "pavucontrol")
 
   --------------------------------------------------------------------
   -- "Standard" xmonad key bindings
@@ -585,15 +617,20 @@ myMouseBindings (XConfig {XMonad.modMask = modMask}) = M.fromList $
 myStartupHook = do
   setWMName "LG3D"
   setDefaultCursor xC_left_ptr
+  spawn "home/wassp/scripts/monitors.sh"
 
 myHandleEventHook = docksEventHook
                <+> handleEventHook def
                <+> fullscreenEventHook
                <+> spotifyForceFloatingEventHook
+               <+> telegramForceFloatingEventHook
 spotifyForceFloatingEventHook = dynamicPropertyChange "WM_NAME" (title =? "Spotify" --> floating)
   where
-    floating = (customFloating $ W.RationalRect (1/6) (1/6) (2/3) (2/3))
+    floating = (customFloating $ W.RationalRect (1/20) (1/20) (1/2) (1/2))
 
+telegramForceFloatingEventHook = dynamicPropertyChange "WM_NAME" (title =? "telegram-desktop" --> floating)
+  where
+    floating = (customFloating $ W.RationalRect (1/20) (1/20) (1/2) (1/2))
 ------------------------------------------------------------------------
 
 -- Run xmonad with all the defaults we set up.

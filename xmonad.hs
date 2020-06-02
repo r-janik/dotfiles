@@ -6,16 +6,21 @@ import System.Exit
 import qualified Data.List as L
 
 import XMonad
+import XMonad.Core
 import XMonad.Actions.Navigation2D
 import XMonad.Actions.UpdatePointer
 import XMonad.Actions.DynamicProjects
+import XMonad.Actions.DynamicWorkspaces
 import XMonad.Actions.SpawnOn
+import XMonad.Actions.WithAll
 
 import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.DynamicProperty
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.SetWMName
 import XMonad.Hooks.EwmhDesktops (ewmh)
+import XMonad.Config.Desktop
 
 import XMonad.Layout.Gaps
 import XMonad.Layout.Fullscreen
@@ -67,12 +72,17 @@ myScreenshot = "scrot"
 myLauncher = "dmenu_run"
 
 -- My Scratchpads
+spotifyCommand = "spotify"
+spotifyClassName = "Spotify"
+isSpotify = (className =? spotifyClassName)
+
 scratchpads :: [NamedScratchpad]
 scratchpads = 
     [ --(NS "franz" "xterm -e franz" (title =? "Franz") defaultFloating,
-     NS "clementine" "clementine" (title =? "Clementine") (customFloating $ W.RationalRect (1/6) (1/6) (2/3) (2/3))
+     NS "spotify" spotifyCommand isSpotify (customFloating $ W.RationalRect (1/40) (1/20) (19/20) (9/10))
      , NS "trello" "trello" (title =? "Trello") (customFloating $ W.RationalRect (1/6) (1/6) (2/3) (2/3))
      , NS "slack" "slack" (title =? "Slack") defaultFloating 
+     , NS "Franz" "Franz" (title=? "Franz") (customFloating $ W.RationalRect (1/6) (1/6) (2/3) (2/3))
     ]
         
 
@@ -86,7 +96,8 @@ wsCTF = "CTF"
 wsMEDIA = "MEDIA"
 wsCONF = "CONF"
 wsMAIL = "MAIL"
-myWorkspaces = [wsGEN, wsWRK, wsCTF, wsMEDIA, wsCONF, wsMAIL] ++ map show [7..9]
+wsDS   = "DS"
+myWorkspaces = [wsGEN, wsWRK, wsCTF, wsMEDIA, wsCONF, wsMAIL, wsDS] ++ map show [8..9]
 
 ------------------------------------------------------------------------
 
@@ -130,7 +141,13 @@ projects =
     , Project { projectName = wsMAIL
               , projectDirectory = "~/"
               , projectStartHook = Just $ do spawnOn wsMAIL (myTerminal ++ " -e mutt")
-                                             spawnOn wsCONF myTerminal
+                                             spawnOn wsMAIL myTerminal
+              }
+
+    , Project { projectName = wsDS
+              , projectDirectory = "~/ds"
+              , projectStartHook = Just $ do spawnOn wsDS myTerminal 
+                                             spawnOn wsDS myTerminal
               }
 
     ]
@@ -155,7 +172,6 @@ myManageHook = composeAll
     , isFullscreen                                --> (doF W.focusDown <+> doFullFloat)
     -- , isFullscreen                             --> doFullFloat
     ] <+> namedScratchpadManageHook scratchpads
-
 
 
 ------------------------------------------------------------------------
@@ -374,7 +390,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
 
   -- spawn Spotify
   , ((modMask, xK_m),
-     namedScratchpadAction scratchpads "Clementine")
+     namedScratchpadAction scratchpads "spotify")
 
   -- spawn Slack
   , ((modMask .|. shiftMask,  xK_b),
@@ -383,6 +399,10 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   -- spawn Trello
   , ((modMask .|. shiftMask, xK_t),
      namedScratchpadAction scratchpads "trello")
+  -- spawn Franz
+  , ((modMask .|. shiftMask, xK_f),
+     namedScratchpadAction scratchpads "Franz")
+
   --------------------------------------------------------------------
   -- "Standard" xmonad key bindings
   --
@@ -566,8 +586,16 @@ myStartupHook = do
   setWMName "LG3D"
   setDefaultCursor xC_left_ptr
 
+myHandleEventHook = docksEventHook
+               <+> handleEventHook def
+               <+> fullscreenEventHook
+               <+> spotifyForceFloatingEventHook
+spotifyForceFloatingEventHook = dynamicPropertyChange "WM_NAME" (title =? "Spotify" --> floating)
+  where
+    floating = (customFloating $ W.RationalRect (1/6) (1/6) (2/3) (2/3))
 
 ------------------------------------------------------------------------
+
 -- Run xmonad with all the defaults we set up.
 --
 main = do
@@ -618,7 +646,7 @@ defaults = def {
     -- hooks, layouts
     layoutHook         = myLayout,
     -- handleEventHook    = E.fullscreenEventHook,
-    handleEventHook    = fullscreenEventHook,
+    handleEventHook    = myHandleEventHook,
     manageHook         = manageDocks <+> myManageHook,
     startupHook        = myStartupHook
 }

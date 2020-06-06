@@ -56,7 +56,7 @@ import qualified Data.Map        as M
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
 
-myTerminal = "xterm"
+myTerminal = "alacritty"
 myBrowser = "google-chrome-stable"
 myStatusBar = "xmobar -x1 /home/wassp/.xmonad/xmobar.conf"
 
@@ -96,6 +96,9 @@ pavucontrolCommand = "pavucontrol"
 pavucontrolClassName = "Pavucontrol"
 isPavucontrol = (className =? pavucontrolClassName) 
 
+vlcCommand = "vlc"
+vlcClassName = "vlc"
+isVlc = (className =? vlcClassName)  
 
 scratchpads :: [NamedScratchpad]
 scratchpads = 
@@ -106,6 +109,7 @@ scratchpads =
      , NS "franz" franzCommand isFranz (customFloating $ W.RationalRect (1/6) (1/6) (2/3) (2/3))
      , NS "telegram" telegramCommand isTelegram (customFloating $ W.RationalRect (1/6) (1/6) (2/3) (2/3))
      , NS "pavucontrol" pavucontrolCommand isPavucontrol (customFloating $ W.RationalRect (1/6) (1/6) (2/3) (2/3))
+     , NS "vlc" vlcCommand isVlc defaultFloating
     ]
         
 
@@ -116,11 +120,11 @@ scratchpads =
 wsGEN = "GEN"
 wsWRK = "WRK" 
 wsCTF = "CTF"
-wsMEDIA = "MEDIA"
+wsCODE = "CODE"
 wsCONF = "CONF"
 wsMAIL = "MAIL"
 wsDS   = "DS"
-myWorkspaces = [wsGEN, wsWRK, wsCTF, wsMEDIA, wsCONF, wsMAIL, wsDS] ++ map show [8..9]
+myWorkspaces = [wsGEN, wsWRK, wsCTF, wsCODE, wsCONF, wsMAIL, wsDS] ++ map show [8..9]
 
 ------------------------------------------------------------------------
 
@@ -148,11 +152,11 @@ projects =
                                              spawnOn wsCTF myBrowser
               }
 
-    , Project { projectName = wsMEDIA
-              , projectDirectory = "~/"
-              , projectStartHook = Just $ do spawnOn wsMEDIA myTerminal
-                                             spawnOn wsMEDIA myTerminal
-                                             spawnOn wsMEDIA myBrowser
+    , Project { projectName = wsCODE
+              , projectDirectory = "~/fun"
+              , projectStartHook = Just $ do spawnOn wsCODE myTerminal
+                                             spawnOn wsCODE myTerminal
+                                             spawnOn wsCODE myBrowser
               }
 
     , Project { projectName = wsCONF
@@ -414,6 +418,11 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   -- spawn Spotify
   , ((modMask, xK_m),
      namedScratchpadAction scratchpads "spotify")
+
+  -- spawn Vlc
+  , ((modMask, xK_v),
+     namedScratchpadAction scratchpads "vlc")
+
 
   -- spawn Slack
   , ((modMask .|. shiftMask,  xK_b),
